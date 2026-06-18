@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Collection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Google Sans", Arial, sans-serif;
+      background: #f8f9fa;
+      color: #202124;
+      margin: 0;
+      padding: 0;
+    }
+    .sheets-toolbar {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sheets-toolbar .doc-icon {
+      width: 28px; height: 28px;
+      background: #0f9d58;
+      border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sheets-toolbar .doc-icon svg { width: 16px; height: 16px; }
+    .sheets-title {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #202124;
+    }
+    .sheets-subtitle {
+      font-size: 0.78rem;
+      color: #5f6368;
+      margin-left: auto;
+    }
+    .sheet-tabs {
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 0 16px;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      margin-top: 0;
+    }
+    .sheet-tab {
+      padding: 6px 18px;
+      font-size: 0.82rem;
+      color: #202124;
+      border: 1px solid #e0e0e0;
+      border-bottom: none;
+      border-radius: 4px 4px 0 0;
+      background: #1a73e8;
+      color: #fff;
+      font-weight: 500;
+      cursor: default;
+      margin-top: 8px;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid #e0e0e0;
+      border-top: none;
+      background: #fff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    /* Row number column */
+    th.rownum, td.rownum {
+      background: #f8f9fa;
+      color: #80868b;
+      font-size: 0.75rem;
+      font-weight: 400;
+      width: 36px;
+      min-width: 36px;
+      text-align: center;
+      border-right: 1px solid #e0e0e0;
+      padding: 0 6px;
+      cursor: default;
+    }
+    thead tr {
+      background: #f8f9fa;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    th {
+      padding: 7px 12px;
+      text-align: left;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #202124;
+      border-right: 1px solid #e0e0e0;
+      border-bottom: 2px solid #e0e0e0;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    th:hover { background: #e8f0fe; }
+    th.sorted-asc, th.sorted-desc { background: #e8f0fe; color: #1a73e8; }
+    th.sorted-asc::after  { content: " ▲"; font-size: 0.65rem; color: #1a73e8; }
+    th.sorted-desc::after { content: " ▼"; font-size: 0.65rem; color: #1a73e8; }
+    td {
+      padding: 6px 12px;
+      border-right: 1px solid #e0e0e0;
+      border-bottom: 1px solid #e0e0e0;
+      color: #202124;
+      white-space: nowrap;
+    }
+    tbody tr:hover td { background: #e8f0fe; }
+    tbody tr:hover td.rownum { background: #c6d9fa; }
+    .rt-score {
+      font-weight: 500;
+      display: inline-block;
+      min-width: 36px;
+      text-align: center;
+    }
+    .imdb-score { font-weight: 500; }
+    .genre-tag {
+      display: inline-block;
+      background: #e8f0fe;
+      border-radius: 10px;
+      padding: 1px 8px;
+      font-size: 0.75rem;
+      margin: 1px;
+      color: #1a73e8;
+    }
+    .tv-badge {
+      display: inline-block;
+      background: #e6f4ea;
+      border-radius: 10px;
+      padding: 1px 7px;
+      font-size: 0.72rem;
+      margin-left: 5px;
+      color: #0f9d58;
+      font-weight: 500;
+      vertical-align: middle;
+    }
+    .note {
+      font-size: 0.78rem;
+      color: #80868b;
+      padding: 8px 16px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-top: none;
+    }
+  </style>
+</head>
+<body>
+
+<h1 style="text-align:center; font-family:'Google Sans',Arial,sans-serif; font-size:3.5rem; font-weight:600; color:#202124; margin:2.5rem 0 2rem; letter-spacing:-1px;">Movie Collection</h1>
+
+<div class="sheets-toolbar">
+  <span class="sheets-subtitle">Click any column header to sort &nbsp;·&nbsp; 47 titles</span>
+</div>
+
+<div class="sheet-tabs"><div class="sheet-tab">Movies</div></div>
+
+<div class="table-wrap">
+<table id="movieTable">
+  <thead>
+    <tr>
+      <th class="rownum"></th>
+      <th data-col="0" data-type="str">Title</th>
+      <th data-col="1" data-type="num">Year</th>
+      <th data-col="2" data-type="min">Runtime</th>
+      <th data-col="3" data-type="pct">RT Score</th>
+      <th data-col="4" data-type="num">IMDB</th>
+      <th data-col="5" data-type="str">Genre</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>21 Jump Street</td>
+      <td>2012</td>
+      <td>1h 49m</td>
+      <td><span class="rt-score rt-fresh">85%</span></td>
+      <td><span class="imdb-score">7.2</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Comedy</span><span class="genre-tag">Crime</span></td>
+    </tr>
+    <tr>
+      <td>Anchorman: The Legend of Ron Burgundy</td>
+      <td>2004</td>
+      <td>1h 34m</td>
+      <td><span class="rt-score rt-fresh">66%</span></td>
+      <td><span class="imdb-score">7.1</span></td>
+      <td><span class="genre-tag">Comedy</span></td>
+    </tr>
+    <tr>
+      <td>Anchorman 2: The Legend Continues</td>
+      <td>2013</td>
+      <td>1h 59m</td>
+      <td><span class="rt-score rt-fresh">74%</span></td>
+      <td><span class="imdb-score">6.3</span></td>
+      <td><span class="genre-tag">Comedy</span></td>
+    </tr>
+    <tr>
+      <td>Borat</td>
+      <td>2006</td>
+      <td>1h 24m</td>
+      <td><span class="rt-score rt-fresh">90%</span></td>
+      <td><span class="imdb-score">7.4</span></td>
+      <td><span class="genre-tag">Comedy</span><span class="genre-tag">Mockumentary</span></td>
+    </tr>
+    <tr>
+      <td>Chernobyl <span class="tv-badge">TV Mini · 5 eps</span></td>
+      <td>2019</td>
+      <td>~5h 30m</td>
+      <td><span class="rt-score rt-fresh">95%</span></td>
+      <td><span class="imdb-score">9.3</span></td>
+      <td><span class="genre-tag">Drama</span><span class="genre-tag">History</span><span class="genre-tag">Thriller</span></td>
+    </tr>
+    <tr>
+      <td>Dallas Buyers Club</td>
+      <td>2013</td>
+      <td>1h 57m</td>
+      <td><span class="rt-score rt-fresh">92%</span></td>
+      <td><span class="imdb-score">7.9</span></td>
+      <td><span class="genre-tag">Biography</span><span class="genre-tag">Drama</span></td>
+    </tr>
+    <tr>
+      <td>Good Will Hunting</td>
+      <td>1997</td>
+      <td>2h 6m</td>
+      <td><span class="rt-score rt-fresh">97%</span></td>
+      <td><span class="imdb-score">8.4</span></td>
+      <td><span class="genre-tag">Drama</span><span class="genre-tag">Romance</span></td>
+    </tr>
+    <tr>
+      <td>Grown Ups</td>
+      <td>2010</td>
+      <td>1h 42m</td>
+      <td><span class="rt-score rt-rotten">10%</span></td>
+      <td><span class="imdb-score">6.0</span></td>
+      <td><span class="genre-tag">Comedy</span></td>
+    </tr>
+    <tr>
+      <td>Grown Ups 2</td>
+      <td>2013</td>
+      <td>1h 41m</td>
+      <td><span class="rt-score rt-rotten">8%</span></td>
+      <td><span class="imdb-score">5.4</span></td>
+      <td><span class="genre-tag">Comedy</span></td>
+    </tr>
+    <tr>
+      <td>Inception</td>
+      <td>2010</td>
+      <td>2h 28m</td>
+      <td><span class="rt-score rt-fresh">87%</span></td>
+      <td><span class="imdb-score">8.8</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Adventure</span><span class="genre-tag">Sci-Fi</span></td>
+    </tr>
+    <tr>
+      <td>Jurassic Park</td>
+      <td>1993</td>
+      <td>2h 7m</td>
+      <td><span class="rt-score rt-fresh">91%</span></td>
+      <td><span class="imdb-score">8.2</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Adventure</span><span class="genre-tag">Sci-Fi</span></td>
+    </tr>
+    <tr>
+      <td>La La Land</td>
+      <td>2016</td>
+      <td>2h 8m</td>
+      <td><span class="rt-score rt-fresh">91%</span></td>
+      <td><span class="imdb-score">8.0</span></td>
+      <td><span class="genre-tag">Comedy</span><span class="genre-tag">Drama</span><span class="genre-tag">Music</span></td>
+    </tr>
+    <tr>
+      <td>Lord of War</td>
+      <td>2005</td>
+      <td>2h 2m</td>
+      <td><span class="rt-score rt-fresh">62%</span></td>
+      <td><span class="imdb-score">7.6</span></td>
+      <td><span class="genre-tag">Crime</span><span class="genre-tag">Drama</span></td>
+    </tr>
+    <tr>
+      <td>Memento</td>
+      <td>2000</td>
+      <td>1h 53m</td>
+      <td><span class="rt-score rt-fresh">93%</span></td>
+      <td><span class="imdb-score">8.4</span></td>
+      <td><span class="genre-tag">Drama</span><span class="genre-tag">Mystery</span><span class="genre-tag">Thriller</span></td>
+    </tr>
+    <tr>
+      <td>Mission: Impossible</td>
+      <td>1996</td>
+      <td>1h 50m</td>
+      <td><span class="rt-score rt-fresh">65%</span></td>
+      <td><span class="imdb-score">7.2</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Thriller</span></td>
+    </tr>
+    <tr>
+      <td>Mission: Impossible – Fallout</td>
+      <td>2018</td>
+      <td>2h 27m</td>
+      <td><span class="rt-score rt-fresh">98%</span></td>
+      <td><span class="imdb-score">7.7</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Adventure</span><span class="genre-tag">Thriller</span></td>
+    </tr>
+    <tr>
+      <td>Now You See Me</td>
+      <td>2013</td>
+      <td>1h 55m</td>
+      <td><span class="rt-score rt-rotten">51%</span></td>
+      <td><span class="imdb-score">7.2</span></td>
+      <td><span class="genre-tag">Crime</span><span class="genre-tag">Mystery</span><span class="genre-tag">Thriller</span></td>
+    </tr>
+    <tr>
+      <td>Now You See Me 2</td>
+      <td>2016</td>
+      <td>2h 9m</td>
+      <td><span class="rt-score rt-rotten">34%</span></td>
+      <td><span class="imdb-score">6.4</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Adventure</span><span class="genre-tag">Comedy</span></td>
+    </tr>
+    <tr>
+      <td>Passengers</td>
+      <td>2016</td>
+      <td>1h 56m</td>
+      <td><span class="rt-score rt-rotten">31%</span></td>
+      <td><span class="imdb-score">7.0</span></td>
+      <td><span class="genre-tag">Drama</span><span class="genre-tag">Romance</span><span class="genre-tag">Sci-Fi</span></td>
+    </tr>
+    <tr>
+      <td>Shutter Island</td>
+      <td>2010</td>
+      <td>2h 18m</td>
+      <td><span class="rt-score rt-fresh">69%</span></td>
+      <td><span class="imdb-score">8.2</span></td>
+      <td><span class="genre-tag">Drama</span><span class="genre-tag">Mystery</span><span class="genre-tag">Thriller</span></td>
+    </tr>
+    <tr>
+      <td>Snowpiercer</td>
+      <td>2013</td>
+      <td>2h 6m</td>
+      <td><span class="rt-score rt-fresh">94%</span></td>
+      <td><span class="imdb-score">7.1</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Sci-Fi</span><span class="genre-tag">Thriller</span></td>
+    </tr>
+    <tr>
+      <td>Star Wars I: The Phantom Menace</td>
+      <td>1999</td>
+      <td>2h 16m</td>
+      <td><span class="rt-score rt-rotten">54%</span></td>
+      <td><span class="imdb-score">6.5</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Adventure</span><span class="genre-tag">Fantasy</span></td>
+    </tr>
+    <tr>
+      <td>Star Wars II: Attack of the Clones</td>
+      <td>2002</td>
+      <td>2h 22m</td>
+      <td><span class="rt-score rt-fresh">65%</span></td>
+      <td><span class="imdb-score">6.6</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Adventure</span><span class="genre-tag">Fantasy</span></td>
+    </tr>
+    <tr>
+      <td>Star Wars III: Revenge of the Sith</td>
+      <td>2005</td>
+      <td>2h 20m</td>
+      <td><span class="rt-score rt-fresh">80%</span></td>
+      <td><span class="imdb-score">7.6</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Adventure</span><span class="genre-tag">Fantasy</span></td>
+    </tr>
+    <tr>
+      <td>Star Wars IV: A New Hope</td>
+      <td>1977</td>
+      <td>2h 1m</td>
+      <td><span class="rt-score rt-fresh">93%</span></td>
+      <td><span class="imdb-score">8.6</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Adventure</span><span class="genre-tag">Fantasy</span></td>
+    </tr>
+    <tr>
+      <td>Star Wars V: The Empire Strikes Back</td>
+      <td>1980</td>
+      <td>2h 4m</td>
+      <td><span class="rt-score rt-fresh">94%</span></td>
+      <td><span class="imdb-score">8.7</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Adventure</span><span class="genre-tag">Fantasy</span></td>
+    </tr>
+    <tr>
+      <td>Star Wars VI: Return of the Jedi</td>
+      <td>1983</td>
+      <td>2h 11m</td>
+      <td><span class="rt-score rt-fresh">83%</span></td>
+      <td><span class="imdb-score">8.3</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Adventure</span><span class="genre-tag">Fantasy</span></td>
+    </tr>
+    <tr>
+      <td>Step Brothers</td>
+      <td>2008</td>
+      <td>1h 38m</td>
+      <td><span class="rt-score rt-rotten">55%</span></td>
+      <td><span class="imdb-score">6.9</span></td>
+      <td><span class="genre-tag">Comedy</span></td>
+    </tr>
+    <tr>
+      <td>Superbad</td>
+      <td>2007</td>
+      <td>1h 53m</td>
+      <td><span class="rt-score rt-fresh">88%</span></td>
+      <td><span class="imdb-score">7.6</span></td>
+      <td><span class="genre-tag">Comedy</span></td>
+    </tr>
+    <tr>
+      <td>The Dictator</td>
+      <td>2012</td>
+      <td>1h 24m</td>
+      <td><span class="rt-score rt-rotten">56%</span></td>
+      <td><span class="imdb-score">6.5</span></td>
+      <td><span class="genre-tag">Comedy</span></td>
+    </tr>
+    <tr>
+      <td>The Hangover</td>
+      <td>2009</td>
+      <td>1h 40m</td>
+      <td><span class="rt-score rt-fresh">79%</span></td>
+      <td><span class="imdb-score">7.7</span></td>
+      <td><span class="genre-tag">Comedy</span></td>
+    </tr>
+    <tr>
+      <td>The Hangover Part II</td>
+      <td>2011</td>
+      <td>1h 42m</td>
+      <td><span class="rt-score rt-rotten">35%</span></td>
+      <td><span class="imdb-score">6.5</span></td>
+      <td><span class="genre-tag">Comedy</span></td>
+    </tr>
+    <tr>
+      <td>The Hangover Part III</td>
+      <td>2013</td>
+      <td>1h 40m</td>
+      <td><span class="rt-score rt-rotten">21%</span></td>
+      <td><span class="imdb-score">5.9</span></td>
+      <td><span class="genre-tag">Comedy</span><span class="genre-tag">Crime</span></td>
+    </tr>
+    <tr>
+      <td>The Hunger Games</td>
+      <td>2012</td>
+      <td>2h 22m</td>
+      <td><span class="rt-score rt-fresh">84%</span></td>
+      <td><span class="imdb-score">7.2</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Adventure</span><span class="genre-tag">Sci-Fi</span></td>
+    </tr>
+    <tr>
+      <td>The Hunger Games: Catching Fire</td>
+      <td>2013</td>
+      <td>2h 26m</td>
+      <td><span class="rt-score rt-fresh">90%</span></td>
+      <td><span class="imdb-score">7.5</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Adventure</span><span class="genre-tag">Sci-Fi</span></td>
+    </tr>
+    <tr>
+      <td>The Matrix</td>
+      <td>1999</td>
+      <td>2h 16m</td>
+      <td><span class="rt-score rt-fresh">83%</span></td>
+      <td><span class="imdb-score">8.7</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Sci-Fi</span></td>
+    </tr>
+    <tr>
+      <td>The Matrix Reloaded</td>
+      <td>2003</td>
+      <td>2h 18m</td>
+      <td><span class="rt-score rt-fresh">74%</span></td>
+      <td><span class="imdb-score">7.2</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Sci-Fi</span></td>
+    </tr>
+    <tr>
+      <td>The Matrix Revolutions</td>
+      <td>2003</td>
+      <td>2h 9m</td>
+      <td><span class="rt-score rt-rotten">33%</span></td>
+      <td><span class="imdb-score">6.7</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Sci-Fi</span></td>
+    </tr>
+    <tr>
+      <td>The Menu</td>
+      <td>2022</td>
+      <td>1h 47m</td>
+      <td><span class="rt-score rt-fresh">88%</span></td>
+      <td><span class="imdb-score">7.2</span></td>
+      <td><span class="genre-tag">Comedy</span><span class="genre-tag">Horror</span><span class="genre-tag">Thriller</span></td>
+    </tr>
+    <tr>
+      <td>The Pursuit of Happyness</td>
+      <td>2006</td>
+      <td>1h 57m</td>
+      <td><span class="rt-score rt-fresh">67%</span></td>
+      <td><span class="imdb-score">8.0</span></td>
+      <td><span class="genre-tag">Biography</span><span class="genre-tag">Drama</span></td>
+    </tr>
+    <tr>
+      <td>The Shawshank Redemption</td>
+      <td>1994</td>
+      <td>2h 22m</td>
+      <td><span class="rt-score rt-fresh">89%</span></td>
+      <td><span class="imdb-score">9.3</span></td>
+      <td><span class="genre-tag">Drama</span></td>
+    </tr>
+    <tr>
+      <td>The Silence of the Lambs</td>
+      <td>1991</td>
+      <td>1h 58m</td>
+      <td><span class="rt-score rt-fresh">95%</span></td>
+      <td><span class="imdb-score">8.6</span></td>
+      <td><span class="genre-tag">Crime</span><span class="genre-tag">Drama</span><span class="genre-tag">Thriller</span></td>
+    </tr>
+    <tr>
+      <td>The Terminator</td>
+      <td>1984</td>
+      <td>1h 47m</td>
+      <td><span class="rt-score rt-fresh">100%</span></td>
+      <td><span class="imdb-score">8.1</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Sci-Fi</span></td>
+    </tr>
+    <tr>
+      <td>The Usual Suspects</td>
+      <td>1995</td>
+      <td>1h 46m</td>
+      <td><span class="rt-score rt-fresh">87%</span></td>
+      <td><span class="imdb-score">8.5</span></td>
+      <td><span class="genre-tag">Crime</span><span class="genre-tag">Drama</span><span class="genre-tag">Mystery</span></td>
+    </tr>
+    <tr>
+      <td>The Wolf of Wall Street</td>
+      <td>2013</td>
+      <td>3h 0m</td>
+      <td><span class="rt-score rt-fresh">79%</span></td>
+      <td><span class="imdb-score">8.2</span></td>
+      <td><span class="genre-tag">Biography</span><span class="genre-tag">Comedy</span><span class="genre-tag">Crime</span></td>
+    </tr>
+    <tr>
+      <td>Tropic Thunder</td>
+      <td>2008</td>
+      <td>1h 47m</td>
+      <td><span class="rt-score rt-fresh">82%</span></td>
+      <td><span class="imdb-score">7.1</span></td>
+      <td><span class="genre-tag">Action</span><span class="genre-tag">Comedy</span><span class="genre-tag">War</span></td>
+    </tr>
+    <tr>
+      <td>White Chicks</td>
+      <td>2004</td>
+      <td>1h 49m</td>
+      <td><span class="rt-score rt-rotten">15%</span></td>
+      <td><span class="imdb-score">5.9</span></td>
+      <td><span class="genre-tag">Comedy</span><span class="genre-tag">Crime</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="note">Chernobyl runtime is total across all 5 episodes &nbsp;·&nbsp; RT and IMDB colors: red = low, yellow = mid, green = high</p>
+
+<script>
+  function scoreColor(ratio) {
+    const hue = ratio * 120;
+    return `hsl(${hue}, 85%, 38%)`;
+  }
+
+  // Add row number cells to every tbody row
+  const tbody = document.querySelector('#movieTable tbody');
+  Array.from(tbody.querySelectorAll('tr')).forEach((row, i) => {
+    const rn = document.createElement('td');
+    rn.className = 'rownum';
+    rn.textContent = i + 1;
+    row.prepend(rn);
+  });
+
+  function updateRowNums() {
+    Array.from(tbody.querySelectorAll('tr')).forEach((row, i) => {
+      row.querySelector('.rownum').textContent = i + 1;
+    });
+  }
+
+  // Apply gradient colors
+  document.querySelectorAll('.rt-score').forEach(el => {
+    const pct = parseFloat(el.textContent) / 100;
+    el.style.color = scoreColor(pct);
+  });
+
+  document.querySelectorAll('.imdb-score').forEach(el => {
+    const score = parseFloat(el.textContent);
+    const ratio = Math.min(1, Math.max(0, (score - 5) / 4.5));
+    el.style.color = scoreColor(ratio);
+  });
+
+  const table = document.getElementById('movieTable');
+  const headers = table.querySelectorAll('th[data-col]');
+  let sortCol = -1;
+  let sortAsc = true;
+
+  function parseValue(td, type) {
+    const text = td.textContent.trim();
+    if (type === 'num' || type === 'pct') return parseFloat(text.replace('%', '')) || 0;
+    if (type === 'min') {
+      const match = text.replace('~', '').match(/(?:(\d+)h)?\s*(?:(\d+)m)?/);
+      return parseInt(match[1] || 0) * 60 + parseInt(match[2] || 0);
+    }
+    return text.toLowerCase();
+  }
+
+  headers.forEach(th => {
+    th.addEventListener('click', () => {
+      const col = parseInt(th.dataset.col);
+      const type = th.dataset.type;
+
+      sortAsc = (sortCol === col) ? !sortAsc : true;
+      sortCol = col;
+
+      table.querySelectorAll('th').forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
+      th.classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
+
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      rows.sort((a, b) => {
+        // col+1 to skip the rownum td
+        const aVal = parseValue(a.querySelectorAll('td')[col + 1], type);
+        const bVal = parseValue(b.querySelectorAll('td')[col + 1], type);
+        if (aVal < bVal) return sortAsc ? -1 : 1;
+        if (aVal > bVal) return sortAsc ? 1 : -1;
+        return 0;
+      });
+
+      rows.forEach(r => tbody.appendChild(r));
+      updateRowNums();
+    });
+  });
+</script>
+
+</body>
+</html>
