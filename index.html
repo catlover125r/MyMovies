@@ -38,7 +38,38 @@
       font-size: 0.78rem;
       color: #5f6368;
       margin-left: auto;
+      white-space: nowrap;
     }
+    .search-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .search-wrap svg {
+      position: absolute;
+      left: 9px;
+      width: 15px; height: 15px;
+      color: #5f6368;
+      pointer-events: none;
+    }
+    #searchInput {
+      padding: 5px 10px 5px 30px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-family: "Google Sans", Arial, sans-serif;
+      font-size: 0.82rem;
+      color: #202124;
+      background: #f8f9fa;
+      outline: none;
+      width: 220px;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    #searchInput:focus {
+      border-color: #1a73e8;
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(26,115,232,0.15);
+    }
+    #searchInput::placeholder { color: #9aa0a6; }
     .sheet-tabs {
       background: #fff;
       border-top: 1px solid #e0e0e0;
@@ -158,7 +189,11 @@
 <h1 style="text-align:center; font-family:'Google Sans',Arial,sans-serif; font-size:3.5rem; font-weight:600; color:#202124; margin:2.5rem 0 2rem; letter-spacing:-1px;">Movie Collection</h1>
 
 <div class="sheets-toolbar">
-  <span class="sheets-subtitle">Click any column header to sort &nbsp;·&nbsp; 47 titles</span>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="searchInput" type="text" placeholder="Search titles, genres…" autocomplete="off">
+  </div>
+  <span class="sheets-subtitle" id="countLabel">Click any column header to sort &nbsp;·&nbsp; 47 titles</span>
 </div>
 
 <div class="sheet-tabs"><div class="sheet-tab">Movies</div></div>
@@ -575,8 +610,11 @@
   });
 
   function updateRowNums() {
-    Array.from(tbody.querySelectorAll('tr')).forEach((row, i) => {
-      row.querySelector('.rownum').textContent = i + 1;
+    let i = 1;
+    Array.from(tbody.querySelectorAll('tr')).forEach(row => {
+      const rn = row.querySelector('.rownum');
+      if (row.style.display !== 'none') rn.textContent = i++;
+      else rn.textContent = '';
     });
   }
 
@@ -630,8 +668,32 @@
 
       rows.forEach(r => tbody.appendChild(r));
       updateRowNums();
+      applySearch();
     });
   });
+
+  const searchInput = document.getElementById('searchInput');
+  const countLabel = document.getElementById('countLabel');
+  const totalCount = tbody.querySelectorAll('tr').length;
+
+  function applySearch() {
+    const q = searchInput.value.trim().toLowerCase();
+    let visible = 0;
+    Array.from(tbody.querySelectorAll('tr')).forEach(row => {
+      const text = row.textContent.toLowerCase();
+      const show = !q || text.includes(q);
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    countLabel.innerHTML = q
+      ? `${visible} of ${totalCount} titles match &nbsp;·&nbsp; <a href="#" id="clearSearch" style="color:#1a73e8;text-decoration:none;">Clear</a>`
+      : `Click any column header to sort &nbsp;·&nbsp; ${totalCount} titles`;
+    updateRowNums();
+    const clearBtn = document.getElementById('clearSearch');
+    if (clearBtn) clearBtn.addEventListener('click', e => { e.preventDefault(); searchInput.value = ''; applySearch(); searchInput.focus(); });
+  }
+
+  searchInput.addEventListener('input', applySearch);
 </script>
 
 </body>
